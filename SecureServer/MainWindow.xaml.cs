@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using X509.Crypto;
 
 namespace SecureServer
 {
@@ -22,7 +23,8 @@ namespace SecureServer
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
-
+            System.Net.ServicePointManager.ServerCertificateValidationCallback +=
+    (s, cert, chain, sslPolicyErrors) => true;
 
         }
 
@@ -44,18 +46,7 @@ namespace SecureServer
             Task.Run(() =>
             {
 
-                /* if (new FileInfo("SrvCertificate.pfx").Exists == false)
-                 {
-                     GenerateServerX509Certificate("SrvCertificate.pfx", "SecureServer");
-                 }
-                 X509Certificate2 certificate = new X509Certificate2("SrvCertificate.crt");*/
-                var rsaKey = RSA.Create(2048);
-                string subject = $"CN=SecureServer";
-                var certReq = new CertificateRequest(subject, rsaKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-                certReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
-                certReq.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(certReq.PublicKey, false));
-                var expirate = DateTimeOffset.Now.AddYears(5);
-                var certificate = certReq.CreateSelfSigned(DateTimeOffset.Now, expirate);
+                var certificate = new X509Certificate2(CryptContextHelper.CreateX509Certificate("SecureServer", "12345678987654321", DateTime.Now.AddYears(5)),"12345678987654321");
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                 EndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
                 Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -64,6 +55,7 @@ namespace SecureServer
 
                 while (true)
                 {
+                    
                     try
                     {
                         Socket handler = listenSocket.Accept();
@@ -83,13 +75,14 @@ namespace SecureServer
                         }
 
                         // закрываем сокет
-                        handler.Shutdown(SocketShutdown.Both);
-                        handler.Close();
+                        
+
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
                     }
+                   
                 }
 
 

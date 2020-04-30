@@ -18,7 +18,7 @@ namespace Client
         public MainWindow()
         {
             InitializeComponent();
-
+            
             Loaded += (x, y) => Send(x, y);
         }
         // The following method is invoked by the RemoteCertificateValidationDelegate.
@@ -40,7 +40,7 @@ namespace Client
             // подключаемся к удаленному хосту
             socket.Connect(ipPoint);
             using (var networkStream = new NetworkStream(socket, true))
-            using (var sslStream = new SslStream(networkStream))
+            using (var sslStream = new SslStream(networkStream,false,ValidateServerCertificate))
             {
                 sslStream.AuthenticateAsClient("SecureServer");
                 byte[] messsage = Encoding.UTF8.GetBytes("Hello from the client.<EOF>");
@@ -57,24 +57,16 @@ namespace Client
 
         private static string ReadMessage(SslStream sslStream)
         {
-            // Read the  message sent by the client.
-            // The client signals the end of the message using the
-            // "<EOF>" marker.
             byte[] buffer = new byte[2048];
             StringBuilder messageData = new StringBuilder();
             int bytes = -1;
             do
             {
-                // Read the client's test message.
                 bytes = sslStream.Read(buffer, 0, buffer.Length);
-
-                // Use Decoder class to convert from bytes to UTF8
-                // in case a character spans two buffers.
                 Decoder decoder = Encoding.UTF8.GetDecoder();
                 char[] chars = new char[decoder.GetCharCount(buffer, 0, bytes)];
                 decoder.GetChars(buffer, 0, bytes, chars, 0);
                 messageData.Append(chars);
-                // Check for EOF or an empty message.
                 if (messageData.ToString().IndexOf("<EOF>") != -1)
                 {
                     break;
