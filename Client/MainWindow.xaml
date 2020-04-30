@@ -36,7 +36,7 @@
             <Setter Property="FontSize" Value="18"/>
         </Style>
     </Window.Resources>
-    <Grid Background="Black" MinWidth="600" MinHeight="325">
+    <Grid x:Name="LoginForm" Background="Black" MinWidth="600" MinHeight="325">
         <Rectangle HorizontalAlignment="Left" Height="226" VerticalAlignment="Top" Width="338" RadiusX="0" RadiusY="0" StrokeThickness="4" RenderTransformOrigin="0.504,0.502" Margin="233,88,0,0">
             <Rectangle.Stroke>
                 <SolidColorBrush Color="#FF00F800" Opacity="0.75"/>
@@ -44,20 +44,21 @@
         </Rectangle>
         <TextBlock Style="{StaticResource GreenText}" HorizontalAlignment="Left" Margin="274,137,0,0" Text="Логин:" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock Style="{StaticResource GreenText}" HorizontalAlignment="Left" Margin="274,192,0,0" Text="Пароль:" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Margin="274,161,0,0" Text="Введите логин" TextWrapping="Wrap" VerticalAlignment="Top" Width="256" BorderBrush="Lime" Foreground="#FF00A500" FontSize="14">
+        <TextBox x:Name="Login" HorizontalAlignment="Left" Margin="274,161,0,0" Text="Введите логин" TextWrapping="Wrap" VerticalAlignment="Top" Width="256" BorderBrush="Lime" Foreground="#FF00A500" FontSize="14">
             <TextBox.Background>
                 <SolidColorBrush Color="White" Opacity="0"/>
             </TextBox.Background>
         </TextBox>
-        <TextBox HorizontalAlignment="Left" Margin="274,216,0,0" Text="Введите пароль" TextWrapping="Wrap" VerticalAlignment="Top" Width="256" BorderBrush="Lime" Foreground="#FF00A500" FontSize="14">
-            <TextBox.Background>
-                <SolidColorBrush Color="White" Opacity="0"/>
-            </TextBox.Background>
-        </TextBox>
-        <Button Content="Войти" Style="{StaticResource DefaultButtons}" HorizontalAlignment="Center" Margin="0,270,0,0" VerticalAlignment="Top"  Height="36" Width="128"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+        <Button Content="Войти" Style="{StaticResource DefaultButtons}" HorizontalAlignment="Center" Margin="0,270,0,0" VerticalAlignment="Top"  Height="36" Width="128"  HorizontalContentAlignment="Center" Click="Send" VerticalContentAlignment="Center">
             <Button.Background>
                 <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
             </Button.Background>
         </Button>
+        <PasswordBox x:Name="Password" HorizontalAlignment="Left" Margin="274,217,0,0" VerticalAlignment="Top" Width="256" BorderBrush="Lime" Foreground="#FF00A500" FontSize="14"  >
+            <PasswordBox.Background>
+                <SolidColorBrush Color="White" Opacity="0"/>
+            </PasswordBox.Background>
+        </PasswordBox>
+        <TextBlock x:Name="message" Style="{StaticResource GreenText}" HorizontalAlignment="Left" Margin="274,243,0,0"  TextWrapping="Wrap" VerticalAlignment="Top" />
     </Grid>
 </Window>
