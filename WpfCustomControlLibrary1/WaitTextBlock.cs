@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WpfCustomControlLibrary1
 {
@@ -47,10 +35,9 @@ namespace WpfCustomControlLibrary1
     /// </summary>
     public class WaitTextBlock : TextBlock
     {
-        Timer timer;
-        int dots = 0;
-
-        string TextContent = "";
+        private Timer timer;
+        private int dots = 0;
+        private string TextContent = "";
         static WaitTextBlock()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(WaitTextBlock), new FrameworkPropertyMetadata(typeof(WaitTextBlock)));
@@ -59,14 +46,14 @@ namespace WpfCustomControlLibrary1
         public WaitTextBlock()
         {
             Loaded += (x, y) => { TextContent += Text; Start(); };
-           
+
         }
 
         public void Start()
         {
             TimerCallback tm = new TimerCallback(ChangeState);
 
-            timer= new Timer(tm, null, 0, 500);
+            timer = new Timer(tm, null, 0, 500);
         }
         public void Stop()
         {
@@ -87,7 +74,7 @@ namespace WpfCustomControlLibrary1
                     dots = 0;
                     Text = "";
                     Text += TextContent;
-                    
+
                 }
             });
         }
