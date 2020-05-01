@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WpfCustomControlLibrary1\WpfCustomControlLibrary1.csproj" />
+    <ProjectReference Include="..\X509.Crypto\X509.Crypto.csproj" />
   </ItemGroup>
 
   <ItemGroup>

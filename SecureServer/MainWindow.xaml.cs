@@ -1,15 +1,17 @@
 ﻿using System;
-using System.Net;
 using System.Windows;
+using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
-using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
-using System.Security.Cryptography;
-using System.Security.Policy;
 using Newtonsoft.Json;
+using X509.Crypto;
+
 
 namespace SecureServer
 {
@@ -18,17 +20,16 @@ namespace SecureServer
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int port = 8005; // порт для приема входящих запросов
-        string connectionString;
-        DataTable phonesTable;
 
+        private static int port = 447; // порт для приема входящих запросов
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
-          
-            
+
         }
+
+
         public DataTable Select(string selectSQL) // функция подключения к базе данных и обработка запросов
         {
             DataTable dataTable = new DataTable("Secure");                // создаём таблицу в приложении
@@ -48,73 +49,87 @@ namespace SecureServer
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-           
             Task.Run(() =>
             {
-                
-                
-                // получаем адреса для запуска сокета
-                IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
-                
-                // создаем сокет
+                var certificate = new X509Certificate2(CryptContextHelper.CreateX509Certificate("SecureServer", "12345678987654321", DateTime.Now.AddYears(5)), "12345678987654321");
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                EndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
                 Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            
-            
-                // связываем сокет с локальной точкой, по которой будем принимать данные
                 listenSocket.Bind(ipPoint);
-
-                // начинаем прослушивание
                 listenSocket.Listen(10);
-               
-                    while (true)
-                    {
-                   
-                        Socket handler = listenSocket.Accept();
+                while (true)
+                {
+
+                    Socket handler = listenSocket.Accept();
                     try
                     {
+                        using (var networkStream = new NetworkStream(handler, true))
+                        using (var sslStream = new SslStream(networkStream))
+                        {
+                            sslStream.AuthenticateAsServer(certificate, clientCertificateRequired: false, checkCertificateRevocation: false);
+                            // use sslStream.BeginRead/BeginWrite here
+                           // sslStream.ReadTimeout = 10000;
+                           // sslStream.WriteTimeout = 10000;
+                            string messageData = ReadMessage(sslStream);
+                            AutentificationData user = JsonConvert.DeserializeObject<AutentificationData>(messageData);
+                            DataTable dataTable = Select($"select Пароль from Сотрудники where Логин='{user.login}'");
+                            byte[] data;
+                            if (dataTable.Rows[0].ItemArray[0].ToString() == JsonConvert.SerializeObject(new SHA512CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(user.password))))
+                            {
+                                string message = "Успешный вход<EOF>";
+                                data = Encoding.UTF8.GetBytes(message);
+                            }
+                            else
+                            {
+                                string message = "Неверный логин или пароль<EOF>";
+                                data = Encoding.UTF8.GetBytes(message);
+                            }
+                            sslStream.Write(data);
+                            sslStream.Close();
+                        }
 
-                        // получаем сообщение
-                        StringBuilder builder = new StringBuilder();
-                        int bytes = 0; // количество полученных байтов
-                        byte[] data = new byte[256]; // буфер для получаемых данных
-
-                        do
-                        {
-                            bytes = handler.Receive(data);
-                            builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                        }
-                        while (handler.Available > 0);
-                        AutentificationData user = JsonConvert.DeserializeObject<AutentificationData>(builder.ToString());
-                        DataTable dataTable = Select($"select Пароль from Сотрудники where Логин='{user.login}'");
-                        if (dataTable.Rows[0].ItemArray[0].ToString() == JsonConvert.SerializeObject(new SHA512CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(user.password))))
-                        {
-                            string message = "Успешный вход";
-                            data = Encoding.Unicode.GetBytes(message);
-                            handler.Send(data);
-                        }
-                        else
-                        {
-                            string message = "Неверный логин или пароль";
-                            data = Encoding.Unicode.GetBytes(message);
-                            handler.Send(data);
-                        }
                     }
                     catch (Exception ex)
                     {
-                        string message = "Неверный логин или пароль";
-                        byte[] data = Encoding.Unicode.GetBytes(message);
-                        handler.Send(data);
-                    }
-                    // отправляем ответ
 
-                    // закрываем сокет
-                    handler.Shutdown(SocketShutdown.Both);
-                        handler.Close();
-                   
                     }
-                
-          
+
+
+                }
+
+
             });
+
+        }
+        private static string ReadMessage(SslStream sslStream)
+        {
+            // Read the  message sent by the client.
+            // The client signals the end of the message using the
+            // "<EOF>" marker.
+            byte[] buffer = new byte[2048];
+            StringBuilder messageData = new StringBuilder();
+            int bytes = -1;
+            do
+            {
+                // Read the client's test message.
+                bytes = sslStream.Read(buffer, 0, buffer.Length);
+
+                // Use Decoder class to convert from bytes to UTF8
+                // in case a character spans two buffers.
+                Decoder decoder = Encoding.UTF8.GetDecoder();
+                char[] chars = new char[decoder.GetCharCount(buffer, 0, bytes)];
+                decoder.GetChars(buffer, 0, bytes, chars, 0);
+                messageData.Append(chars);
+                // Check for EOF or an empty message.
+                if (messageData.ToString().IndexOf("<EOF>") != -1)
+                {
+                    messageData=messageData.Remove(messageData.ToString().IndexOf("<EOF>"), 5);
+                    break;
+                }
+            } while (bytes != 0);
+
+            return messageData.ToString();
+
         }
     }
 }
