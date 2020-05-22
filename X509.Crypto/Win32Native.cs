@@ -1,25 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 
-namespace X509.Crypto {
-    internal class Win32Native {
+namespace X509.Crypto
+{
+    internal class Win32Native
+    {
         [StructLayout(LayoutKind.Sequential)]
-        internal class CryptoApiBlob {
+        internal class CryptoApiBlob
+        {
             public int DataLength;
 
             public IntPtr Data;
 
-            public CryptoApiBlob(int dataLength, IntPtr data) {
+            public CryptoApiBlob(int dataLength, IntPtr data)
+            {
                 this.DataLength = dataLength;
                 this.Data = data;
             }
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal class SystemTime {
+        internal class SystemTime
+        {
             public short Year;
 
             public short Month;
@@ -38,7 +40,8 @@ namespace X509.Crypto {
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        internal class CryptKeyProviderInformation {
+        internal class CryptKeyProviderInformation
+        {
             public string ContainerName;
 
             public string ProviderName;

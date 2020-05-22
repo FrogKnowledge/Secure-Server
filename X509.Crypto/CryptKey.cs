@@ -1,31 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace X509.Crypto {
-    public abstract class CryptKey : DisposeableObject {
-        private CryptContext ctx;
+namespace X509.Crypto
+{
+    public abstract class CryptKey : DisposeableObject
+    {
+        private readonly CryptContext ctx;
 
-        private IntPtr handle;
+        private readonly IntPtr handle;
 
-        internal IntPtr Handle {
-            get {
+        internal IntPtr Handle
+        {
+            get
+            {
                 return this.handle;
             }
         }
 
-        public abstract KeyType Type {
+        public abstract KeyType Type
+        {
             get;
         }
 
-        internal CryptKey(CryptContext ctx, IntPtr handle) {
+        internal CryptKey(CryptContext ctx, IntPtr handle)
+        {
             this.ctx = ctx;
             this.handle = handle;
         }
 
-        protected override void CleanUp(bool viaDispose) {
-            if (viaDispose) {
+        protected override void CleanUp(bool viaDispose)
+        {
+            if (viaDispose)
+            {
                 this.ctx.DestroyKey(this);
             }
         }
