@@ -107,6 +107,10 @@ namespace Client
                             main.Dispatcher.Invoke(() =>
                             {
                                 main.SeeFloors=newFloorData;
+                                foreach(var x in main.SeeFloors)
+                                {
+                                    x.SetChangeHandler(main.HandleFloorsChange);
+                                }
                                 main.FloorSelection.ItemsSource = main.SeeFloors;
                                 main.SeeFloors.CollectionChanged += main.HandleFloorsChange;
                             });

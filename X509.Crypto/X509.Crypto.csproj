@@ -48,7 +48,6 @@
     <Compile Include="KeyExchangeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SelfSignedCertProperties.cs" />
-    <Compile Include="SignatureKey.cs" />
     <Compile Include="Win32ErrorHelper.cs" />
     <Compile Include="Win32Native.cs" />
   </ItemGroup>

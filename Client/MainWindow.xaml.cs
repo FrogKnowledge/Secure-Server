@@ -39,7 +39,7 @@ namespace Client
         private double scaleFactor = 1;
         private double totalScale = 0.4;
         ObservableCollection<Floor> floors;
-
+        
         public ObservableCollection<Floor> SeeFloors
         {
             get

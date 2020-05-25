@@ -19,13 +19,14 @@ namespace CommonTypes
 
             public Room(PointD[] points,string name,NotifyCollectionChangedEventHandler handler)
             {
-                SetChangeHandler(handler);
+
                
                 this.name = name;
                 for (int i = 0; i < points.Length; i++)
                 {
                     Points.Add(points[i]);
                 }
+                SetChangeHandler(handler);
             }
 
 

@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Client"
         xmlns:svg="clr-namespace:Svg.Pathing;assembly=Svg"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" 
+        Title="Client" Height="450" Width="800" 
         MinHeight="440" MinWidth="700">
     <Window.Resources>
         <Style x:Key="ScrollBarLineButtonStyle" TargetType="{x:Type RepeatButton}">
@@ -415,16 +415,12 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition/>
-                            <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <RadioButton Grid.Column="0" Style="{StaticResource BottomMenuButton}" IsChecked="True" Checked="DisplayAdministratorsObjects"  >
                             Объекты
                         </RadioButton>
                         <RadioButton x:Name="EmployeesRB" Grid.Column="1" Style="{StaticResource BottomMenuButton}" Checked="DisplayAdministratorsEmployees">
                             Сотрудники
-                        </RadioButton>
-                        <RadioButton  Grid.Column="2" Style="{StaticResource BottomMenuButton}">
-                            что-то
                         </RadioButton>
                     </Grid>
 

@@ -96,19 +96,6 @@ namespace X509.Crypto
             return new KeyExchangeKey(this, intPtr);
         }
 
-        private SignatureKey GenerateSignatureKey(bool exportable, int keyBitLength)
-        {
-            this.ThrowIfDisposedOrNotOpen();
-            uint flags = (uint)((exportable ? 1 : 0) | keyBitLength << 16);
-            IntPtr intPtr;
-
-            if (!Win32Native.CryptGenKey(this.handle, 2, flags, out intPtr))
-            {
-                Win32ErrorHelper.ThrowExceptionIfGetLastErrorIsNotZero();
-            }
-            return new SignatureKey(this, intPtr);
-        }
-
         internal void DestroyKey(CryptKey key)
         {
             this.ThrowIfDisposedOrNotOpen();
