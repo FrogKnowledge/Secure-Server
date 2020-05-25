@@ -8,7 +8,7 @@
         xmlns:svg="clr-namespace:Svg.Pathing;assembly=Svg"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" 
-        MinHeight="440" MinWidth="600">
+        MinHeight="440" MinWidth="700">
     <Window.Resources>
         <Style x:Key="ScrollBarLineButtonStyle" TargetType="{x:Type RepeatButton}">
             <Setter Property="Focusable" Value="False"/>
@@ -187,7 +187,7 @@
             <Setter Property="Height" Value="20"/>
 
         </Style>
-      
+
 
         <Style x:Key="DefaultButtons" TargetType="Button">
             <Setter Property="Template">
@@ -212,7 +212,7 @@
 
     </Window.Resources>
     <Grid>
-        <Grid x:Name="LoginForm" Visibility="Hidden">
+        <Grid x:Name="LoginForm" Visibility="Visible">
             <Grid.RowDefinitions>
                 <RowDefinition />
             </Grid.RowDefinitions>
@@ -239,7 +239,7 @@
                             <SolidColorBrush Color="White" Opacity="0"/>
                         </TextBox.Background>
                     </TextBox>
-                    <Button Content="Войти" Grid.Row="6" Style="{StaticResource DefaultButtons}" HorizontalAlignment="Center"  VerticalAlignment="Top"  Height="36" Width="128"  HorizontalContentAlignment="Center" Click="Send" VerticalContentAlignment="Center" >
+                    <Button Content="Войти" x:Name="TryEnter" Grid.Row="6" Style="{StaticResource DefaultButtons}" HorizontalAlignment="Center"  VerticalAlignment="Top"  Height="36" Width="128"  HorizontalContentAlignment="Center" Click="Send" VerticalContentAlignment="Center" >
                         <Button.Background>
                             <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
                         </Button.Background>
@@ -254,8 +254,7 @@
                 </Grid>
             </Border>
         </Grid >
-        <Grid Visibility="Visible"  x:Name="AdministratorInterface">
-            
+        <Grid Visibility="Hidden"  x:Name="AdministratorInterface">
             <Border Margin="20 20 20 27" BorderThickness="1.25">
                 <Border.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -266,11 +265,11 @@
                     </LinearGradientBrush>
                 </Border.BorderBrush>
                 <Grid>
-                   
+
                     <Canvas x:Name="DrawingField">
 
                     </Canvas>
-                    
+
                     <Grid  Grid.Column="0" x:Name="EmployeeInfo" Margin="0,0,0,17">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -282,7 +281,7 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <Button Grid.Row="0" Click="AddEmployee"  Margin="7">
+                            <Button Grid.Row="0" x:Name="AddEmployeeButton" Click="AddEmployee"  Margin="7">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border BorderBrush="Lime"  BorderThickness="1" CornerRadius="10" Background="#FF003200">
@@ -381,7 +380,7 @@
                                 <TextBlock Grid.Row="1" Foreground="Lime" TextWrapping="Wrap" Text="{Binding Other}" Margin="0,0,0,40" Grid.RowSpan="2"/>
                                 <StackPanel Grid.Row="2" FlowDirection="RightToLeft" Orientation="Horizontal">
 
-                                    <Button Click="DeleteEmployee" Margin="10,0,5,0" >
+                                    <Button x:Name="DeleteEmployeeButton" Click="DeleteEmployee" Margin="10,0,5,0" >
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border BorderBrush="Lime"  Width="30" Height="30"  BorderThickness="1" CornerRadius="3" Background="#FF003200">
@@ -392,7 +391,7 @@
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
-                                    <Button Click="EditEmployee" Margin="5,0,0,0">
+                                    <Button x:Name="EditEmployeeButton" Click="EditEmployee" Margin="5,0,0,0">
                                         <Button.Template>
                                             <ControlTemplate   TargetType="Button">
                                                 <Border BorderBrush="Lime" Width="30" Height="30" BorderThickness="1" CornerRadius="3" Background="#FF003200">
@@ -428,7 +427,7 @@
                             что-то
                         </RadioButton>
                     </Grid>
-                   
+
                 </Grid>
 
             </Border>
@@ -437,26 +436,75 @@
             <Rectangle  Fill="Black" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="21.375"  Height="28.375" />
             <Rectangle  Fill="Black" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="21.375"  Height="28.375" />
             <Canvas x:Name="Ruler" VerticalAlignment="Top" Height="1" Margin="20,0,20,0"/>
-            <Grid VerticalAlignment="Top" Margin="25,25,0,0"  x:Name="EditingInterface">
-                <StackPanel Orientation="Horizontal"> <ComboBox VerticalAlignment="Center" x:Name="DivisionStep" SelectionChanged="SelectionChanged" Margin="6,6,6,0" SelectedIndex="0" HorizontalAlignment="Center"  BorderBrush="Lime">
-                  
-                    <TextBlock>0.5m</TextBlock>
-                    <TextBlock>1m</TextBlock>
-                    <TextBlock>5m</TextBlock>
-                    <TextBlock>10m</TextBlock>
+
+            <Grid 
+                Margin="25,25,25,0"  x:Name="EditingInterface">
+                <StackPanel  HorizontalAlignment="Center" VerticalAlignment="Top" Orientation="Horizontal">
+                    <Button x:Name="RemoveFloorsButton" Margin="0,0,10,0" Click="RemoveFloor">-Этаж</Button>
+                    <Button x:Name="AddFloorsButton" Margin="0,0,10,0" Click="AddFloor">+Этаж</Button>
+                <ComboBox x:Name="FloorSelection" SelectionChanged="FloorSelectionChanged"  Height="20"   Width="110" Margin="0,0,80,0">
+                   <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" ></TextBlock>
+                    </DataTemplate>
+                    </ComboBox.ItemTemplate>
                 </ComboBox>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Horizontal">
+                    <ComboBox VerticalAlignment="Center" x:Name="DivisionStep" SelectionChanged="SelectionChanged" Margin="6,6,6,0" SelectedIndex="0" HorizontalAlignment="Center"  BorderBrush="Lime">
+
+                        <TextBlock>0.5m</TextBlock>
+                        <TextBlock>1m</TextBlock>
+                        <TextBlock>5m</TextBlock>
+                        <TextBlock>10m</TextBlock>
+                    </ComboBox>
                     <Border Background="White" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,6,0,0">
-                        <Grid  >
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">Сетка</TextBlock>
-                            <CheckBox Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Center" Checked="GridVisible" Unchecked="HideGrid"/>
+                            <CheckBox Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Center" Checked="GridVisible" Unchecked="HideGrid">
+
+                            </CheckBox>
                         </Grid>
                     </Border>
                 </StackPanel>
+                <Border HorizontalAlignment="Right" Background="Black"  VerticalAlignment="Top" BorderBrush="lime" Grid.Column="0" BorderThickness="1.2">
+                    <Grid  >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid  >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Border BorderBrush="lime" Grid.Column="0" BorderThickness="1.2">
+                                <CheckBox x:Name="RoomsCB" Checked="RoomsSelected" Unchecked="SomeCBUnselected" Content="-Комнаты" Foreground="Lime" Margin="3" />
+                            </Border>
+                            <Border BorderBrush="lime" Grid.Column="1" BorderThickness="1.2">
+                                <CheckBox x:Name="DoorsCB" Checked="DoorsSelected" Unchecked="SomeCBUnselected" Margin="3" Content="-Двери" Foreground="Lime" />
+                            </Border>
+                            <Border BorderBrush="lime" Grid.Column="2" BorderThickness="1.2">
+                                <CheckBox x:Name="CamerasCB" Checked="CamerasSelected" Unchecked="SomeCBUnselected"  Margin="3" Content="-Камеры" Foreground="Lime" />
+                            </Border>
+                        </Grid>
+                        <ScrollViewer VerticalAlignment="Top" x:Name="ObjectsSW" Visibility="Collapsed" Grid.Row="1" Background="Black">
+                            <StackPanel x:Name="ObjectsContainer" Orientation="Vertical">
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+                <Border x:Name="AddContainer" VerticalAlignment="Top" HorizontalAlignment="Right" BorderBrush="Lime" Background="Black" BorderThickness="1">
+
+                </Border>
             </Grid>
+
             <Border Visibility="Hidden" x:Name="EditingVindow" BorderBrush="Lime" Background="#ff001500" BorderThickness="3" Height="350" Width="300">
                 <Grid >
                     <Grid.RowDefinitions>
@@ -527,7 +575,7 @@
                                         <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="Black" />
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Black" />
                                     </ComboBox.Resources>
-                                   
+
                                 </ComboBox>
                             </StackPanel>
                             <StackPanel Grid.Row="5" Orientation="Horizontal">

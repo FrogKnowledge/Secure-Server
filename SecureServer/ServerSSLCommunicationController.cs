@@ -1,6 +1,8 @@
 ﻿using CommonTypes;
+using CommonTypes.ObjectStructureModel;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
@@ -76,7 +78,11 @@ namespace SecureServer
                                 {
                                     switch (operation)
                                     {
+
                                         case "FirstData":
+                                            data = GetFloorsData();
+                                            sslStream.Write(data);
+                                            sslStream.Flush();
                                             data = EmployeeData();
                                             sslStream.Write(data);
                                             sslStream.Flush();
@@ -92,6 +98,10 @@ namespace SecureServer
                                             database.EditEmployee(parameters[1]);
                                             data = EmployeeData();
                                             break;
+                                        case "ChangeFloors":
+                                            List<Floor> floors = JsonConvert.DeserializeObject<List<Floor>>(Encoding.UTF8.GetString(Convert.FromBase64String(parameters[1])));
+                                            database.ChangeFloors(floors);
+                                            continue;
                                         case "DeleteEmployee":
                                             database.DeleteEmployee(Encoding.UTF8.GetString(Convert.FromBase64String(parameters[1])));
                                             data = EmployeeData();
@@ -114,6 +124,12 @@ namespace SecureServer
 
             });
         }
+        public byte[] GetFloorsData()
+        {
+            string answer = "UpdFloorsData." + Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(database.floorsBuffer))) + "<EOF>";
+            return Encoding.UTF8.GetBytes(answer);
+        }
+       
         public void Stop()
         {
             database.CloseConnection();

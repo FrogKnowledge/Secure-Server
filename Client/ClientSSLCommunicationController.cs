@@ -1,4 +1,5 @@
 ﻿using CommonTypes;
+using CommonTypes.ObjectStructureModel;
 using Newtonsoft.Json;
 using System;
 using System.Collections.ObjectModel;
@@ -56,7 +57,7 @@ namespace Client
                         {
                             StartHandlingAnswer();
                         }
-
+                        main.Dispatcher.Invoke(() => main.TryEnter.IsEnabled = true);
                     };
 
                     socket.Close();
@@ -99,6 +100,15 @@ namespace Client
                                 {
                                     main.Professions.Add(newProfessionData[i]);
                                 }
+                            });
+                            break;
+                        case "UpdFloorsData":
+                            var newFloorData = JsonConvert.DeserializeObject<ObservableCollection<Floor>>(Encoding.UTF8.GetString(Convert.FromBase64String(parameters[1])));
+                            main.Dispatcher.Invoke(() =>
+                            {
+                                main.SeeFloors=newFloorData;
+                                main.FloorSelection.ItemsSource = main.SeeFloors;
+                                main.SeeFloors.CollectionChanged += main.HandleFloorsChange;
                             });
                             break;
                     }

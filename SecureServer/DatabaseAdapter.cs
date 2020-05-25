@@ -1,11 +1,16 @@
 ﻿using CommonTypes;
+using CommonTypes.ObjectStructureModel;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Documents;
 
 namespace SecureServer
 {
@@ -13,6 +18,7 @@ namespace SecureServer
     {
 
         public SqlConnection connect = null;
+        public List<Floor> floorsBuffer;
 
         public void OpenConnection(string connectionString)
         {
@@ -20,6 +26,7 @@ namespace SecureServer
             try
             {
                 connect.Open();
+                floorsBuffer=GetFloors().ToList();
             }
             catch (SqlException ex)
             {
@@ -40,7 +47,6 @@ namespace SecureServer
                     command.ExecuteNonQuery();
 
                 }
-                Console.WriteLine(ex.Message);
             }
 
         }
@@ -68,7 +74,77 @@ namespace SecureServer
             catch (Exception) { }
 
         }
-        public void EditEmployee(string data)
+        public void ChangeFloors(List<Floor> floors)
+        {
+            if(floorsBuffer!=null)
+            lock (floorsBuffer)
+            {
+                floorsBuffer = floors;
+            }
+            ClearFloorsData();
+            for(int i = 0; i < floors.Count; i++)
+            {
+                QueryWithoutAnswer($"insert into Этажи(id,Название) values({i},'{floors[i].Name}')");
+                string doorQuery = "insert into Двери([Id Этажа],Точки) values";
+                for (int j = 0; j < floors[i].Doors.Count; j++)
+                {
+                    doorQuery+=$"({i},'{JsonConvert.SerializeObject(floors[i].Doors[j].point1)+'$'+ JsonConvert.SerializeObject(floors[i].Doors[j].point2)}')";
+                    if (j != floors[i].Doors.Count - 1)
+                        doorQuery += ',';
+                }
+                QueryWithoutAnswer(doorQuery + ';');
+                string roomQuery = "insert into Комнаты([Id Этажа],Точки,Название) values";
+                for (int j = 0; j < floors[i].rooms.Count; j++)
+                {
+                    doorQuery += $"({i},'{JsonConvert.SerializeObject(floors[i].rooms[j].Points)}','{floors[i].rooms[j].name}')";
+                    if (j != floors[i].rooms.Count - 1)
+                        doorQuery += ',';
+                }
+                QueryWithoutAnswer(roomQuery + ';');
+                string cameraQuery = "insert into Камеры([Id Этажа],Видеопоток,Точка) values";
+                for (int j = 0; j < floors[i].Cameras.Count; j++)
+                {
+                    doorQuery += $"({i},'{floors[i].Cameras[j].Stream}','{JsonConvert.SerializeObject(floors[i].Cameras[j].Point)}')";
+                    if (j != floors[i].Cameras.Count - 1)
+                        doorQuery += ',';
+                }
+                QueryWithoutAnswer(cameraQuery + ';');
+            }
+        }
+        public Floor[] GetFloors()
+        {
+            var table = QueryWithAnswer("select Название from Этажи");
+            Floor[] floors = new Floor[table.Rows.Count];
+            for(int i = 0; i < floors.Length; i++)
+            {
+                floors[i] = new Floor((string)table.Rows[i].ItemArray[0],null);
+                var rooms = QueryWithAnswer("select Точки,Название from Комнаты");
+                for (int j = 0; j < rooms.Rows.Count; j++)
+                {
+                    floors[i].rooms.Add(new Room(JsonConvert.DeserializeObject<PointD[]>((string)rooms.Rows[j].ItemArray[0]), (string)rooms.Rows[j].ItemArray[1],null));
+                }
+                var cameras = QueryWithAnswer("select Видеопоток,Точка from Комнаты");
+                for (int j = 0; j < cameras.Rows.Count; j++)
+                {
+                    floors[i].Cameras.Add(new Camera(JsonConvert.DeserializeObject<PointD>((string)cameras.Rows[j].ItemArray[1]), (string)rooms.Rows[j].ItemArray[0]));
+                }
+                var doors = QueryWithAnswer("select Точки from Комнаты");
+                for (int j = 0; j < doors.Rows.Count; j++)
+                {
+                    var points = (doors.Rows[j].ItemArray[0] as string).Split('$');
+                    floors[i].Doors.Add(new Floor.Door(JsonConvert.DeserializeObject<PointD>(points[0]), JsonConvert.DeserializeObject<PointD>(points[1])));
+                }
+            }
+            return floors;
+        }
+        private void ClearFloorsData()
+        {
+            QueryWithoutAnswer("truncate table Комнаты;");
+            QueryWithoutAnswer("truncate table Двери;");
+            QueryWithoutAnswer("truncate table Камеры;");
+            QueryWithoutAnswer("truncate table Этажи;");
+        }
+            public void EditEmployee(string data)
         {
             var csp = new SHA512CryptoServiceProvider();
             try
